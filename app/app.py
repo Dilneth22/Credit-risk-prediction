@@ -2,15 +2,33 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+import os # Import the os library
 
-# Load the trained model, scaler, and columns
+# --- ROBUST PATHING ---
+# This makes the app aware of its own location and builds absolute paths
+# This is the key change to fix the "file not found" error
+APP_DIR = os.path.dirname(os.path.realpath(__file__))
+MODEL_PATH = os.path.join(APP_DIR, 'random_forest_model.pkl')
+SCALER_PATH = os.path.join(APP_DIR, 'scaler.pkl')
+COLUMNS_PATH = os.path.join(APP_DIR, 'model_columns.pkl')
+# --- END OF ROBUST PATHING ---
+
+# Load the trained model, scaler, and columns using the absolute paths
 try:
-    model = joblib.load('random_forest_model.pkl')
-    scaler = joblib.load('scaler.pkl')
-    model_columns = joblib.load('model_columns.pkl')
+    model = joblib.load(MODEL_PATH)
+    scaler = joblib.load(SCALER_PATH)
+    model_columns = joblib.load(COLUMNS_PATH)
 except FileNotFoundError:
-    st.error("Model files not found. Please run the notebook to generate them.")
+    st.error("Model files not found! The app is looking for them at these locations:")
+    st.write(f"Model: {MODEL_PATH}")
+    st.write(f"Scaler: {SCALER_PATH}")
+    st.write(f"Columns: {COLUMNS_PATH}")
+    st.write("Please ensure these files exist after running the Jupyter Notebook.")
     st.stop()
+except Exception as e:
+    st.error(f"An error occurred while loading the model files: {e}")
+    st.stop()
+
 
 st.set_page_config(page_title="Loan Approval Prediction", layout="centered")
 st.title("Loan Approval Prediction")
@@ -59,12 +77,7 @@ if st.button("Predict Loan Status"):
     input_df = input_df.reindex(columns=model_columns, fill_value=0)
 
     # Scale the input data
-    try:
-        input_scaled = scaler.transform(input_df)
-    except Exception as e:
-        st.error(f"Error during scaling: {e}")
-        st.stop()
-
+    input_scaled = scaler.transform(input_df)
 
     # Make prediction
     prediction = model.predict(input_scaled)
