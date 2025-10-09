@@ -13,7 +13,7 @@ SCALER_PATH = os.path.join(APP_DIR, 'scaler.pkl')
 COLUMNS_PATH = os.path.join(APP_DIR, 'model_columns.pkl')
 # --- END OF ROBUST PATHING ---
 
-# Load the trained model, scaler, and columns using the absolute paths
+# Load the trained model, scaler, and columns using the absolute 
 try:
     model = joblib.load(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
